@@ -31,6 +31,27 @@ public class HttpServer {
         }
     }
 
+    private String route(String method, String path) {
+        if (method.equals("GET") && path.equals("/")) {
+            return "Welcome to the home page!";
+        }
+
+        if (method.equals("GET") && path.equals("/hello")) {
+            return "Hello World!";
+        }
+
+        if (method.equals("GET") && path.equals("/hello/java")) {
+            return "Hello from Java!";
+        }
+
+        if (method.equals("GET") && path.equals("/status")) {
+            return "Everything is working!";
+        }
+
+        // Default
+        return null; // 404
+    }
+
     private void handleClient(Socket client) throws IOException {
         System.out.println("Client connected!");
 
@@ -69,17 +90,27 @@ public class HttpServer {
         }
 
         // Send response
+        String body = route(method, path);
+
         PrintWriter out = new PrintWriter(client.getOutputStream(), true);
 
-        // Body text
-        String body = "Hello World!";
-
-        out.print("HTTP/1.1 200 OK\r\n");
-        out.print("Content-Type: text/plain\r\n");
-        out.print("Content-Length: " + body.length() + "\r\n");
-        out.print("Connection: close\r\n");
-        out.print("\r\n");
-        out.print(body);
+        if (body == null) {
+            String not_found = "404 Not found!";
+            out.print("HTTP/1.1 200 OK\r\n");
+            out.print("Content-Type: text/plain\r\n");
+            out.print("Content-Length: " + not_found.length() + "\r\n");
+            out.print("Connection: close\r\n");
+            out.print("\r\n");
+            out.print(not_found);
+        }
+        else {
+            out.print("HTTP/1.1 200 OK\r\n");
+            out.print("Content-Type: text/plain\r\n");
+            out.print("Content-Length: " + body.length() + "\r\n");
+            out.print("Connection: close\r\n");
+            out.print("\r\n");
+            out.print(body);
+        }
 
         out.flush();
         client.close();
